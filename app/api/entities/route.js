@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getDatabase } from '@/lib/mongodb';
 
 export async function GET(request) {
   try {
@@ -8,8 +7,7 @@ export async function GET(request) {
     const clientId = searchParams.get('clientId');
     const query = searchParams.get('query');
 
-    const client = await clientPromise;
-    const db = client.db();
+    const db = await getDatabase();
 
     let filter = {};
     if (!isAdmin && clientId) {
@@ -25,10 +23,10 @@ export async function GET(request) {
       .sort({ date: -1 })
       .toArray();
 
-    return NextResponse.json({ entities });
+    return Response.json({ entities });
   } catch (error) {
     console.error('Error fetching entities:', error);
-    return NextResponse.json({ error: 'Failed to fetch entities' }, { status: 500 });
+    return Response.json({ error: 'Failed to fetch entities' }, { status: 500 });
   }
 }
 
