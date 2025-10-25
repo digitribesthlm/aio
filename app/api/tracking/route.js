@@ -6,6 +6,7 @@ export async function GET(request) {
     const isAdmin = url.searchParams.get('isAdmin') === 'true';
     const clientId = url.searchParams.get('clientId');
     const queryText = url.searchParams.get('query');
+    const keyword = url.searchParams.get('keyword');
 
     const db = await getDatabase();
     let filter = {};
@@ -21,6 +22,10 @@ export async function GET(request) {
 
     if (queryText) {
       filter.query = queryText;
+    }
+
+    if (keyword) {
+      filter.keyword = keyword;
     }
 
     const tracking = await db

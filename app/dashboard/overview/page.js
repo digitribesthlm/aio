@@ -73,13 +73,9 @@ export default function OverviewPage() {
 
   return (
     <div>
-      <div className="hero">
-        <h1>SEO Performance Overview</h1>
-        <p>Track your brand visibility and keyword performance across AI platforms</p>
-        <div className="pills">
-          <Link href="/dashboard/quickwins" className="pill">🎯 Quick Wins</Link>
-          <Link href="/dashboard/entities" className="pill secondary">🔍 Entity Extraction</Link>
-        </div>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '600', marginBottom: '8px' }}>Overview</h1>
+        <p style={{ color: '#6b7280' }}>Track your brand visibility and keyword performance</p>
       </div>
 
       <div className="stats-grid">

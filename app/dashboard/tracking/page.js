@@ -7,10 +7,9 @@ export default function TrackingPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [tracking, setTracking] = useState([]);
-  const [queries, setQueries] = useState([]);
-  const [selectedQuery, setSelectedQuery] = useState('');
+  const [keywords, setKeywords] = useState([]);
+  const [selectedKeyword, setSelectedKeyword] = useState('');
   const [loading, setLoading] = useState(true);
-  const [loadingQueries, setLoadingQueries] = useState(true);
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -20,41 +19,40 @@ export default function TrackingPage() {
     }
     const userData = JSON.parse(storedUser);
     setUser(userData);
-    fetchQueries(userData);
+    fetchKeywords(userData);
   }, [router]);
 
   useEffect(() => {
-    if (user && selectedQuery) {
-      fetchTracking(user, selectedQuery);
+    if (user && selectedKeyword) {
+      fetchTracking(user, selectedKeyword);
     }
-  }, [user, selectedQuery]);
+  }, [user, selectedKeyword]);
 
-  const fetchQueries = async (currentUser) => {
+  const fetchKeywords = async (currentUser) => {
     try {
       const isAdmin = currentUser.role === 'admin';
-      const res = await fetch(`/api/tracking/queries?isAdmin=${isAdmin}${!isAdmin ? `&clientId=${currentUser.clientId}` : ''}`);
+      const res = await fetch(`/api/keywords?isAdmin=${isAdmin}${!isAdmin ? `&clientId=${currentUser.clientId}` : ''}`);
       const data = await res.json();
-      setQueries(data.queries || []);
-      setSelectedQuery((data.queries || [])[0] || '');
-      setLoadingQueries(false);
+      const keywordList = (data.keywords || []).map(k => k.keyword);
+      setKeywords(keywordList);
+      setSelectedKeyword(keywordList[0] || '');
+      setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch queries:', error);
-      setLoadingQueries(false);
+      console.error('Failed to fetch keywords:', error);
+      setLoading(false);
     }
   };
 
-  const fetchTracking = async (currentUser, q) => {
+  const fetchTracking = async (currentUser, keyword) => {
     try {
       const isAdmin = currentUser.role === 'admin';
       const res = await fetch(
-        `/api/tracking?isAdmin=${isAdmin}${!isAdmin ? `&clientId=${currentUser.clientId}` : ''}&query=${encodeURIComponent(q)}`
+        `/api/tracking?isAdmin=${isAdmin}${!isAdmin ? `&clientId=${currentUser.clientId}` : ''}&keyword=${encodeURIComponent(keyword)}`
       );
       const data = await res.json();
       setTracking(data.tracking || []);
-      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch tracking:', error);
-      setLoading(false);
     }
   };
 
@@ -62,31 +60,44 @@ export default function TrackingPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1>Keyword Performance</h1>
-        <p>Question: {selectedQuery || '—'}</p>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '600', marginBottom: '8px' }}>Keyword Performance</h1>
+        <p style={{ color: '#6b7280' }}>Track how your keywords perform across different queries</p>
       </div>
 
-      <div className="card" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <div className="card" style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Select Keyword</label>
         <select
-          value={selectedQuery}
-          onChange={(e) => setSelectedQuery(e.target.value)}
-          style={{ flex: 1, padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+          value={selectedKeyword}
+          onChange={(e) => setSelectedKeyword(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            borderRadius: '6px',
+            border: '1px solid #e5e7eb',
+            fontSize: '14px',
+          }}
         >
-          {loadingQueries ? (
-            <option>Loading queries...</option>
-          ) : queries.length ? (
-            queries.map((q, i) => (
-              <option key={i} value={q}>{q}</option>
+          {loading ? (
+            <option>Loading keywords...</option>
+          ) : keywords.length ? (
+            keywords.map((k, i) => (
+              <option key={i} value={k}>{k}</option>
             ))
           ) : (
-            <option>No queries found</option>
+            <option>No keywords found</option>
           )}
         </select>
+        {selectedKeyword && (
+          <div style={{ marginTop: '12px', padding: '12px', background: '#f9fafb', borderRadius: '6px' }}>
+            <div style={{ fontSize: '12px', color: '#6b7280' }}>Tracking Keyword</div>
+            <div style={{ fontWeight: '600', fontSize: '16px' }}>{selectedKeyword}</div>
+          </div>
+        )}
       </div>
 
       <div className="card">
-        <h3>Tracked Keywords</h3>
+        <h3>Queries Where This Keyword Appears</h3>
         {loading ? (
           <p>Loading...</p>
         ) : tracking.length > 0 ? (
@@ -94,10 +105,10 @@ export default function TrackingPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Keyword</th>
+                  <th>Query</th>
                   <th>LLM Model</th>
                   <th>Position</th>
-                  <th>Found</th>
+                  <th>Status</th>
                   <th>Date</th>
                   <th>URL</th>
                 </tr>
@@ -105,19 +116,53 @@ export default function TrackingPage() {
               <tbody>
                 {tracking.map((t, i) => (
                   <tr key={i}>
-                    <td>{t.keyword}</td>
-                    <td>{t.llm}</td>
-                    <td>{t.position || '-'}</td>
+                    <td>{t.query}</td>
                     <td>
-                      <span className={`badge ${t.found ? 'badge-active' : 'badge-client'}`}>
+                      <span
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: '#f3f4f6',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                        }}
+                      >
+                        {t.llm}
+                      </span>
+                    </td>
+                    <td>
+                      {t.position ? (
+                        <span
+                          style={{
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            background: t.position <= 3 ? '#10b98120' : '#f59e0b20',
+                            color: t.position <= 3 ? '#10b981' : '#f59e0b',
+                            fontWeight: '600',
+                          }}
+                        >
+                          #{t.position}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        className="badge"
+                        style={{
+                          background: t.found ? '#10b98120' : '#ef444420',
+                          color: t.found ? '#10b981' : '#ef4444',
+                        }}
+                      >
                         {t.found ? 'Found' : 'Not Found'}
                       </span>
                     </td>
                     <td>{new Date(t.date).toLocaleDateString()}</td>
                     <td>
                       {t.url ? (
-                        <a href={t.url} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea' }}>
-                          View
+                        <a href={t.url} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none' }}>
+                          View →
                         </a>
                       ) : (
                         '-'
@@ -129,9 +174,12 @@ export default function TrackingPage() {
             </table>
           </div>
         ) : (
-          <p>No tracked keywords found for this question.</p>
+          <p style={{ color: '#6b7280', textAlign: 'center', padding: '40px' }}>
+            No tracking data found for this keyword.
+          </p>
         )}
       </div>
     </div>
   );
 }
+
