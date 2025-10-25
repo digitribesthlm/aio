@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState(null);
-  const [activeMenu, setActiveMenu] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +29,7 @@ export default function DashboardLayout({ children }) {
   if (!user) return null;
 
   const isAdmin = user.role === 'admin';
+  const isActive = (path) => pathname === path;
 
   return (
     <div className="dashboard">
@@ -43,82 +44,63 @@ export default function DashboardLayout({ children }) {
       </nav>
 
       <aside className="sidebar">
+        <Link
+          href="/dashboard/overview"
+          className={`sidebar-item ${isActive('/dashboard/overview') ? 'active' : ''}`}
+        >
+          📊 Overview
+        </Link>
+        
+        <Link
+          href="/dashboard/quickwins"
+          className={`sidebar-item ${isActive('/dashboard/quickwins') ? 'active' : ''}`}
+        >
+          🎯 Quick Wins
+        </Link>
+
+        <Link
+          href="/dashboard/entities"
+          className={`sidebar-item ${isActive('/dashboard/entities') ? 'active' : ''}`}
+        >
+          🔍 Entity Extraction
+        </Link>
+
+        <Link
+          href="/dashboard/tracking"
+          className={`sidebar-item ${isActive('/dashboard/tracking') ? 'active' : ''}`}
+        >
+          📈 Tracking Results
+        </Link>
+
+        <Link
+          href="/dashboard/mentions"
+          className={`sidebar-item ${isActive('/dashboard/mentions') ? 'active' : ''}`}
+        >
+          🏷️ Brand Mentions
+        </Link>
+
+        <div style={{ margin: '16px 0', borderTop: '1px solid #e5e7eb' }}></div>
+
+        <Link
+          href="/dashboard/queries"
+          className={`sidebar-item ${isActive('/dashboard/queries') ? 'active' : ''}`}
+        >
+          📝 Queries
+        </Link>
+
         {isAdmin && (
           <>
             <Link
-              href="/dashboard/overview"
-              className={`sidebar-item ${activeMenu === 'overview' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('overview')}
-            >
-              Overview
-            </Link>
-            <Link
-              href="/dashboard/queries"
-              className={`sidebar-item ${activeMenu === 'queries' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('queries')}
-            >
-              LLM Queries
-            </Link>
-            <Link
               href="/dashboard/keywords"
-              className={`sidebar-item ${activeMenu === 'keywords' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('keywords')}
+              className={`sidebar-item ${isActive('/dashboard/keywords') ? 'active' : ''}`}
             >
-              Keywords
-            </Link>
-            <Link
-              href="/dashboard/tracking"
-              className={`sidebar-item ${activeMenu === 'tracking' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('tracking')}
-            >
-              Tracking Data
-            </Link>
-            <Link
-              href="/dashboard/mentions"
-              className={`sidebar-item ${activeMenu === 'mentions' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('mentions')}
-            >
-              Brand Mentions
+              🔑 Keywords
             </Link>
             <Link
               href="/dashboard/users"
-              className={`sidebar-item ${activeMenu === 'users' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('users')}
+              className={`sidebar-item ${isActive('/dashboard/users') ? 'active' : ''}`}
             >
-              Users
-            </Link>
-          </>
-        )}
-
-        {!isAdmin && (
-          <>
-            <Link
-              href="/dashboard/overview"
-              className={`sidebar-item ${activeMenu === 'overview' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('overview')}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/dashboard/queries"
-              className={`sidebar-item ${activeMenu === 'queries' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('queries')}
-            >
-              My Queries
-            </Link>
-            <Link
-              href="/dashboard/tracking"
-              className={`sidebar-item ${activeMenu === 'tracking' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('tracking')}
-            >
-              Tracking Results
-            </Link>
-            <Link
-              href="/dashboard/mentions"
-              className={`sidebar-item ${activeMenu === 'mentions' ? 'active' : ''}`}
-              onClick={() => setActiveMenu('mentions')}
-            >
-              Mentions
+              👥 Users
             </Link>
           </>
         )}
@@ -130,3 +112,4 @@ export default function DashboardLayout({ children }) {
     </div>
   );
 }
+
