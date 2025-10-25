@@ -43,7 +43,6 @@ yarn-error.log*
 case.mb
 
 # Local docs (ignored)
-README.md
 PROJECT_SUMMARY.md
 QUICK_REFERENCE.md
 SETUP.md
