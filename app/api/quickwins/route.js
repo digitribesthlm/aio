@@ -18,7 +18,7 @@ export async function GET(request) {
     const quickWins = await db
       .collection('LLMQuickWins')
       .find(filter)
-      .sort({ priority: 1, created_at: -1 })
+      .sort({ created_at: -1 })
       .toArray();
 
     return NextResponse.json({ quickWins });
